@@ -1,0 +1,36 @@
+{
+  "name": "cites-peru-fauna",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Explorador del Listado de Fauna Silvestre CITES - Perú (MINAM 2023)",
+  "type": "module",
+  "scripts": {
+    "data": "node scripts/convert-data.mjs",
+    "favicon": "node scripts/gen-favicon.mjs",
+    "predev": "node scripts/convert-data.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/convert-data.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-table": "^8.20.5",
+    "html-to-image": "^1.11.13",
+    "lucide-react": "^0.454.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "png-to-ico": "^2.1.8",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "xlsx": "^0.18.5"
+  }
+}

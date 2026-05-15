@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Command *)",
+      "Bash(node *)",
+      "Skill(react-doctor)",
+      "PowerShell(Out-Null *)",
+      "PowerShell(Set-Location \"D:\\\\PROYECTOS\\\\gepres\\\\aplicativo de especies\\\\public\"; Get-ChildItem | Select-Object Name, @{N='KB';E={[math]::Round\\($_.Length/1KB,1\\)}} | Format-Table -AutoSize; $ico=[System.IO.File]::ReadAllBytes\\(\"favicon.ico\"\\); \"ICO header: $\\($ico[0]\\) $\\($ico[1]\\) $\\($ico[2]\\) $\\($ico[3]\\) | images: $\\($ico[4]\\)\")",
+      "PowerShell(Get-Content *)",
+      "PowerShell(npm run *)"
+    ]
+  }
+}

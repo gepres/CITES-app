@@ -1,0 +1,42 @@
+# Configuración de despliegue en Netlify.
+# La app es 100% estática: Netlify corre `npm run build` (que ejecuta
+# prebuild → convierte el .xls a JSON) y publica la carpeta dist/.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA: cualquier ruta cae en index.html (Netlify sirve antes los archivos
+# existentes, así que los assets con hash no se ven afectados).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Assets con hash de Vite: inmutables, caché larga.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# El HTML siempre fresco (apunta a los assets con hash nuevos).
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# El service worker NO debe cachearse, para que las actualizaciones lleguen.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Manifest e iconos con tipo correcto y caché moderada.
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=86400"

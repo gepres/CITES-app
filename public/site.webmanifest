@@ -1,0 +1,27 @@
+{
+  "name": "Fauna Silvestre CITES · Perú",
+  "short_name": "Fauna CITES",
+  "description": "Explorador del Listado de Fauna Silvestre CITES – Perú (MINAM 2023).",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#022c22",
+  "theme_color": "#047857",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+node_modules
+dist
+_scratch
+src/data/*.json
+*.local
+*.tsbuildinfo
+.DS_Store
