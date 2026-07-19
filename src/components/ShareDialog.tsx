@@ -17,6 +17,8 @@ import {
   whatsappUrl,
 } from '../lib/shareImage';
 import { fetchSpeciesPhoto, toDataUrl } from '../lib/speciesPhoto';
+import { proxyMedia, type Recording } from '../lib/speciesAudio';
+import { tipoSonido } from '../lib/meta';
 
 // Ícono de WhatsApp (lucide no lo trae) — glyph simple en SVG.
 function WhatsappIcon({ size = 18 }: { size?: number }) {
@@ -46,9 +48,11 @@ const phoneDigits = (raw: string): string => {
 
 export default function ShareDialog({
   sp,
+  pista,
   onClose,
 }: {
   sp: Species;
+  pista?: Recording | null;
   onClose: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -63,6 +67,8 @@ export default function ShareDialog({
     'loading' | 'ok' | 'none'
   >('loading');
   const [withPhoto, setWithPhoto] = useState(true);
+  const [sono, setSono] = useState<string | null>(null);
+  const [withSono, setWithSono] = useState(true);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -83,9 +89,12 @@ export default function ShareDialog({
         setPhotoState('none');
         return;
       }
-      // Preferimos data URL (más confiable en el PNG); si falla, usamos la
-      // URL remota directa — html-to-image la incrusta vía CORS.
-      const data = await toDataUrl(found.url);
+      // Hace falta un data URL: html-to-image no puede incrustar una imagen
+      // que no llegue con CORS. Las fotos con licencia CC salen del bucket S3
+      // (que sí lo envía), pero las «all rights reserved» vienen de
+      // static.inaturalist.org, que no — de ahí el respaldo por el proxy.
+      const data =
+        (await toDataUrl(found.url)) ?? (await toDataUrl(proxyMedia(found.url)));
       if (!active) return;
       setPhoto(data ?? found.url);
       setPhotoCredit(`${found.source} · ${found.credit}`);
@@ -96,8 +105,34 @@ export default function ShareDialog({
     };
   }, [sp.cientifico]);
 
+  // El espectrograma se incrusta como data URL. xeno-canto no envía cabeceras
+  // CORS, así que se pide por el proxy propio; si no está disponible (entorno
+  // sin funciones) se prueba el enlace directo y, si tampoco, se omite.
+  useEffect(() => {
+    const url = pista?.sono;
+    if (!url) {
+      setSono(null);
+      return;
+    }
+    let activo = true;
+    (async () => {
+      const data = (await toDataUrl(proxyMedia(url))) ?? (await toDataUrl(url));
+      if (activo) setSono(data);
+    })();
+    return () => {
+      activo = false;
+    };
+  }, [pista?.sono]);
+
   const cardPhoto = withPhoto ? photo : null;
   const cardCredit = withPhoto ? photoCredit : undefined;
+  const cardSono = withSono ? sono : null;
+  const cardSonoCredit =
+    withSono && pista
+      ? [tipoSonido(pista.tipo), pista.autor, pista.licencia, pista.fuente]
+          .filter(Boolean)
+          .join(' · ')
+      : undefined;
 
   const canNativeShare =
     typeof navigator !== 'undefined' && !!navigator.share;
@@ -121,7 +156,10 @@ export default function ShareDialog({
     setBusy('share');
     try {
       const file = await nodeToFile(cardRef.current, sp);
-      const data: ShareData = { text: shareText(sp), title: sp.cientifico };
+      const data: ShareData = {
+        text: shareText(sp, pista),
+        title: sp.cientifico,
+      };
       if (file && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ ...data, files: [file] });
       } else {
@@ -146,12 +184,16 @@ export default function ShareDialog({
 
   const handleWhatsapp = () => {
     persistNumber(remember, phone);
-    window.open(whatsappUrl(sp, phoneDigits(phone)), '_blank', 'noopener');
+    window.open(
+      whatsappUrl(sp, phoneDigits(phone), pista),
+      '_blank',
+      'noopener',
+    );
   };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(shareText(sp));
+      await navigator.clipboard.writeText(shareText(sp, pista));
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -177,6 +219,8 @@ export default function ShareDialog({
           sp={sp}
           photo={cardPhoto}
           photoCredit={cardCredit}
+          sono={cardSono}
+          sonoCredit={cardSonoCredit}
         />
       </div>
 
@@ -198,7 +242,13 @@ export default function ShareDialog({
           {/* Vista previa (se desplaza si la ficha es larga) */}
           <div className="flex max-h-[42vh] justify-center overflow-y-auto rounded-2xl bg-slate-100 p-3 dark:bg-slate-800">
             <div style={{ zoom: 0.62 }}>
-              <ShareCard sp={sp} photo={cardPhoto} photoCredit={cardCredit} />
+              <ShareCard
+                sp={sp}
+                photo={cardPhoto}
+                photoCredit={cardCredit}
+                sono={cardSono}
+                sonoCredit={cardSonoCredit}
+              />
             </div>
           </div>
 
@@ -229,6 +279,25 @@ export default function ShareDialog({
                 </span>
                 <span className="block text-[11px] text-slate-400">
                   Se añade al inicio de la imagen al descargar o compartir
+                </span>
+              </span>
+            </label>
+          )}
+
+          {sono && (
+            <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 p-3 transition hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+              <input
+                type="checkbox"
+                checked={withSono}
+                onChange={(e) => setWithSono(e.target.checked)}
+                className="size-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold">
+                  Incluir espectrograma del canto
+                </span>
+                <span className="block text-[11px] text-slate-400">
+                  La huella visual del sonido, con su autoría y licencia
                 </span>
               </span>
             </label>

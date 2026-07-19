@@ -1,0 +1,3 @@
+/api/audio  /.netlify/functions/audio  200
+/api/media  /.netlify/functions/media  200
+/*  /index.html  200

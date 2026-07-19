@@ -7,32 +7,43 @@ import { APENDICE_INFO, estadoLabel, GEO_INFO } from '../lib/meta';
  * Incluye TODOS los datos de la ficha. Siempre en modo claro y ancho fijo
  * para que se vea bien fuera de la app.
  */
+// Definidos fuera del componente: si vivieran dentro, React los trataría como
+// tipos nuevos en cada render y volvería a montarlos.
+function Item({ k, v }: { k: string; v: string }) {
+  return (
+    <div>
+      <div className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+        {k}
+      </div>
+      <div className="text-[13px] font-semibold text-slate-800">{v || '—'}</div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="mt-4">
+      <div className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wider text-brand-700">
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 const ShareCard = forwardRef<
   HTMLDivElement,
-  { sp: Species; photo?: string | null; photoCredit?: string }
->(function ShareCard({ sp, photo, photoCredit }, ref) {
+  {
+    sp: Species;
+    photo?: string | null;
+    photoCredit?: string;
+    /** Imagen del espectrograma ya convertida a data URL. */
+    sono?: string | null;
+    sonoCredit?: string;
+  }
+>(function ShareCard({ sp, photo, photoCredit, sono, sonoCredit }, ref) {
     const ap = APENDICE_INFO[sp.apendice];
     const geo = GEO_INFO[sp.geografia];
-
-    const Item = ({ k, v }: { k: string; v: string }) => (
-      <div>
-        <div className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
-          {k}
-        </div>
-        <div className="text-[13px] font-semibold text-slate-800">
-          {v || '—'}
-        </div>
-      </div>
-    );
-
-    const Section = ({ title, children }: { title: string; children: ReactNode }) => (
-      <div className="mt-4">
-        <div className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wider text-brand-700">
-          {title}
-        </div>
-        {children}
-      </div>
-    );
 
     return (
       <div
@@ -85,6 +96,22 @@ const ShareCard = forwardRef<
               {sp.tipo}
             </span>
           </div>
+
+          {sono && (
+            <Section title="Canto · espectrograma">
+              <div className="overflow-hidden rounded-2xl bg-slate-900">
+                <img
+                  src={sono}
+                  crossOrigin="anonymous"
+                  alt={`Espectrograma de ${sp.cientifico}`}
+                  className="h-28 w-full object-cover"
+                />
+              </div>
+              {sonoCredit && (
+                <p className="mt-1 text-[10px] text-slate-400">🔊 {sonoCredit}</p>
+              )}
+            </Section>
+          )}
 
           {ap?.desc && (
             <div className="mt-4 rounded-2xl bg-slate-50 p-4">
@@ -148,6 +175,9 @@ const ShareCard = forwardRef<
           <p className="mt-5 border-t border-slate-100 pt-3 text-center text-[11px] text-slate-400">
             Fuente: MINAM 2023 — Listado de Especies de Fauna Silvestre CITES –
             Perú. Dirección General de Diversidad Biológica.
+          </p>
+          <p className="text-center text-[10px] text-slate-300">
+            genaropretill.com
           </p>
         </div>
       </div>

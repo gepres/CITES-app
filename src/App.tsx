@@ -3,7 +3,7 @@ import { Download, SlidersHorizontal, X } from 'lucide-react';
 import type { FacetKey, Species } from './types';
 import { FACET_LABELS } from './lib/meta';
 import { exportCsv } from './lib/exportCsv';
-import { useSpeciesData } from './lib/useSpeciesData';
+import { hayIndiceAudio, tieneAudio, useSpeciesData } from './lib/useSpeciesData';
 import { useFavorites } from './lib/useFavorites';
 import Header from './components/Header';
 import StatsCards from './components/StatsCards';
@@ -36,10 +36,19 @@ export default function App() {
   const [showAnexos, setShowAnexos] = useState(false);
   const [mobileFilters, setMobileFilters] = useState(false);
   const [onlyFav, setOnlyFav] = useState(false);
+  const [onlyAudio, setOnlyAudio] = useState(false);
 
-  const visible = useMemo(
-    () => (onlyFav ? filtered.filter((s) => isFav(s.id)) : filtered),
-    [onlyFav, filtered, isFav],
+  const visible = useMemo(() => {
+    let out = filtered;
+    if (onlyFav) out = out.filter((s) => isFav(s.id));
+    if (onlyAudio) out = out.filter(tieneAudio);
+    return out;
+  }, [filtered, onlyFav, isFav, onlyAudio]);
+
+  // Cuántas de las especies filtradas tienen grabación, para el botón.
+  const audioCount = useMemo(
+    () => (hayIndiceAudio ? filtered.filter(tieneAudio).length : 0),
+    [filtered],
   );
 
   useEffect(() => {
@@ -64,10 +73,11 @@ export default function App() {
     (filters[k] ?? []).map((v) => ({ key: k, value: v })),
   );
 
-  const totalActive = activeCount + (onlyFav ? 1 : 0);
+  const totalActive = activeCount + (onlyFav ? 1 : 0) + (onlyAudio ? 1 : 0);
   const resetAll = () => {
     clearAll();
     setOnlyFav(false);
+    setOnlyAudio(false);
   };
 
   return (
@@ -97,6 +107,9 @@ export default function App() {
               onlyFav={onlyFav}
               setOnlyFav={setOnlyFav}
               favCount={favCount}
+              onlyAudio={onlyAudio}
+              setOnlyAudio={setOnlyAudio}
+              audioCount={audioCount}
             />
           </aside>
 
@@ -152,7 +165,7 @@ export default function App() {
             </div>
 
             {/* Chips de filtros activos — móvil (scroll horizontal) */}
-            {(chips.length > 0 || onlyFav) && (
+            {(chips.length > 0 || onlyFav || onlyAudio) && (
               <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1 lg:hidden">
                 {onlyFav && (
                   <button
@@ -160,6 +173,16 @@ export default function App() {
                     className="chip shrink-0 bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
                   >
                     ★ Guardadas
+                    <X size={12} />
+                  </button>
+                )}
+                {onlyAudio && (
+                  <button
+                    type="button"
+                    onClick={() => setOnlyAudio(false)}
+                    className="chip shrink-0 bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300"
+                  >
+                    🔊 Con sonido
                     <X size={12} />
                   </button>
                 )}
@@ -194,6 +217,17 @@ export default function App() {
               Datos: MINAM 2023 · Listado de Especies de Fauna Silvestre CITES –
               Perú. Aplicativo de consulta no oficial con fines informativos.
             </p>
+            <p className="mt-1 text-center text-xs text-slate-400">
+              Desarrollado por{' '}
+              <a
+                href="https://genaropretill.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium transition hover:text-brand-600 hover:underline dark:hover:text-brand-400"
+              >
+                genaropretill.com
+              </a>
+            </p>
           </section>
         </div>
       </main>
@@ -211,6 +245,9 @@ export default function App() {
           onlyFav={onlyFav}
           setOnlyFav={setOnlyFav}
           favCount={favCount}
+          onlyAudio={onlyAudio}
+          setOnlyAudio={setOnlyAudio}
+          audioCount={audioCount}
           onReset={resetAll}
           onClose={() => setMobileFilters(false)}
         />

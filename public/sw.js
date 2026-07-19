@@ -43,6 +43,11 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // La API de grabaciones va siempre a la red: si una consulta devolviera
+  // lista vacía por un fallo puntual de la fuente, el caché la dejaría fija.
+  // (/api/media sí se cachea: son imágenes inmutables.)
+  if (sameOrigin && url.pathname === '/api/audio') return;
+
   // Estáticos del mismo origen: cache-first y se actualiza en segundo plano.
   if (sameOrigin) {
     e.respondWith(

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   Activity,
+  AudioLines,
   FolderTree,
   GitBranch,
   Globe2,
@@ -17,7 +18,7 @@ import {
 import type { FacetKey } from '../types';
 import { APENDICE_INFO, estadoLabel, FACET_LABELS } from '../lib/meta';
 import type { FacetOption } from '../lib/useSpeciesData';
-import { FACET_KEYS } from '../lib/useSpeciesData';
+import { FACET_KEYS, hayIndiceAudio } from '../lib/useSpeciesData';
 
 interface Props {
   query: string;
@@ -30,6 +31,9 @@ interface Props {
   onlyFav: boolean;
   setOnlyFav: (v: boolean) => void;
   favCount: number;
+  onlyAudio: boolean;
+  setOnlyAudio: (v: boolean) => void;
+  audioCount: number;
   onReset: () => void;
   onClose: () => void;
 }
@@ -185,10 +189,13 @@ export default function MobileFilters({
   onlyFav,
   setOnlyFav,
   favCount,
+  onlyAudio,
+  setOnlyAudio,
+  audioCount,
   onReset,
   onClose,
 }: Props) {
-  const hasFilters = activeCount > 0 || onlyFav;
+  const hasFilters = activeCount > 0 || onlyFav || onlyAudio;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end lg:hidden">
@@ -201,9 +208,11 @@ export default function MobileFilters({
       <div className="animate-slide-up relative flex h-[92vh] flex-col rounded-t-3xl bg-white dark:bg-slate-900">
         {/* Asa + cabecera */}
         <div className="shrink-0 px-4 pt-2.5">
-          <div
-            className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700"
+          <button
+            type="button"
             onClick={onClose}
+            aria-label="Cerrar filtros"
+            className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-700"
           />
           <div className="flex items-center justify-between pb-3">
             <div>
@@ -260,20 +269,43 @@ export default function MobileFilters({
 
         {/* Cuerpo desplazable */}
         <div className="min-h-0 flex-1 overflow-y-auto px-4">
-          <button
-            onClick={() => setOnlyFav(!onlyFav)}
-            className={`my-4 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold transition active:scale-[0.98] ${
-              onlyFav
-                ? 'bg-amber-400 text-amber-950'
-                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-            }`}
-          >
-            <Star size={17} className={onlyFav ? 'fill-amber-950' : ''} />
-            {onlyFav ? 'Mostrando guardadas' : 'Solo guardadas'}
-            <span className="rounded-full bg-black/10 px-2 py-0.5 text-[11px] font-extrabold tabular-nums dark:bg-white/15">
-              {favCount}
-            </span>
-          </button>
+          <div className={`my-4 grid gap-2 ${hayIndiceAudio ? 'grid-cols-2' : ''}`}>
+            <button
+              type="button"
+              onClick={() => setOnlyFav(!onlyFav)}
+              aria-pressed={onlyFav}
+              className={`flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl px-2 text-sm font-bold transition active:scale-[0.98] ${
+                onlyFav
+                  ? 'bg-amber-400 text-amber-950'
+                  : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+              }`}
+            >
+              <Star size={17} className={onlyFav ? 'fill-amber-950' : ''} />
+              Guardadas
+              <span className="rounded-full bg-black/10 px-2 py-0.5 text-[11px] font-extrabold tabular-nums dark:bg-white/15">
+                {favCount}
+              </span>
+            </button>
+
+            {hayIndiceAudio && (
+              <button
+                type="button"
+                onClick={() => setOnlyAudio(!onlyAudio)}
+                aria-pressed={onlyAudio}
+                className={`flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl px-2 text-sm font-bold transition active:scale-[0.98] ${
+                  onlyAudio
+                    ? 'bg-sky-500 text-white'
+                    : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                }`}
+              >
+                <AudioLines size={17} />
+                Con sonido
+                <span className="rounded-full bg-black/10 px-2 py-0.5 text-[11px] font-extrabold tabular-nums dark:bg-white/15">
+                  {audioCount}
+                </span>
+              </button>
+            )}
+          </div>
 
           {FACET_KEYS.map((key) => (
             <FacetSection

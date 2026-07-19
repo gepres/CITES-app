@@ -1,10 +1,19 @@
 import { useMemo, useState } from 'react';
 import speciesJson from '../data/species.json';
 import anexosJson from '../data/anexos.json';
+import audioIndexJson from '../data/audio-index.json';
 import type { Anexos, FacetKey, Species } from '../types';
 
 const ALL_SPECIES = speciesJson as Species[];
 export const ANEXOS = anexosJson as Anexos;
+
+// Índice de especies con grabación disponible (`npm run audio-index`).
+// Mientras esté vacío, la app oculta el filtro «Solo con sonido».
+const CON_AUDIO = new Set<string>(
+  (audioIndexJson as { especies?: string[] }).especies ?? [],
+);
+export const hayIndiceAudio = CON_AUDIO.size > 0;
+export const tieneAudio = (sp: Species) => CON_AUDIO.has(sp.cientifico);
 
 export const FACET_KEYS: FacetKey[] = [
   'tipo',

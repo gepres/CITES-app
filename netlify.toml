@@ -9,6 +9,18 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# API interna (grabaciones y proxy del espectrograma). Debe declararse ANTES
+# del comodín SPA: los redirects se evalúan en orden y /* se lo tragaría todo.
+[[redirects]]
+  from = "/api/audio"
+  to = "/.netlify/functions/audio"
+  status = 200
+
+[[redirects]]
+  from = "/api/media"
+  to = "/.netlify/functions/media"
+  status = 200
+
 # SPA: cualquier ruta cae en index.html (Netlify sirve antes los archivos
 # existentes, así que los assets con hash no se ven afectados).
 [[redirects]]

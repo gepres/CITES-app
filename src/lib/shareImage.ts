@@ -1,5 +1,6 @@
 import type { Species } from '../types';
-import { APENDICE_INFO, estadoLabel, GEO_INFO } from './meta';
+import type { Recording } from './speciesAudio';
+import { APENDICE_INFO, estadoLabel, GEO_INFO, tipoSonido } from './meta';
 
 const opts = { pixelRatio: 2, cacheBust: true, backgroundColor: '#ffffff' };
 
@@ -27,7 +28,7 @@ export async function nodeToFile(
   return blob ? new File([blob], fileName(sp), { type: 'image/png' }) : null;
 }
 
-export function shareText(sp: Species): string {
+export function shareText(sp: Species, pista?: Recording | null): string {
   const ap = APENDICE_INFO[sp.apendice];
   const geo = GEO_INFO[sp.geografia];
   const L: string[] = [];
@@ -71,15 +72,31 @@ export function shareText(sp: Species): string {
     L.push(sp.comentarios);
   }
 
+  if (pista?.pagina) {
+    L.push('');
+    L.push('*🔊 Grabación de referencia*');
+    const tipo = tipoSonido(pista.tipo);
+    L.push(
+      `${tipo ? `${tipo} · ` : ''}${pista.autor}${
+        pista.licencia ? ` (${pista.licencia})` : ''
+      }`,
+    );
+    L.push(`Escuchar en ${pista.fuente}: ${pista.pagina}`);
+  }
+
   L.push('');
   L.push('📚 Fuente: MINAM 2023 — Listado de Especies de Fauna Silvestre CITES – Perú.');
 
   return L.join('\n');
 }
 
-export function whatsappUrl(sp: Species, phone: string): string {
+export function whatsappUrl(
+  sp: Species,
+  phone: string,
+  pista?: Recording | null,
+): string {
   const digits = phone.replace(/\D/g, '');
-  const text = encodeURIComponent(shareText(sp));
+  const text = encodeURIComponent(shareText(sp, pista));
   return digits
     ? `https://wa.me/${digits}?text=${text}`
     : `https://wa.me/?text=${text}`;

@@ -56,6 +56,46 @@ export const estadoLabel = (c: string) => ESTADO_INFO[c]?.label ?? c;
 export const estadoCls = (c: string) =>
   ESTADO_INFO[c]?.cls ?? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200';
 
+// Tipos de vocalización tal como los etiqueta xeno-canto (en inglés y a
+// menudo combinados: «call, duet, flight call»).
+const TIPO_SONIDO: Record<string, string> = {
+  song: 'canto',
+  subsong: 'subcanto',
+  'male song': 'canto del macho',
+  'female song': 'canto de la hembra',
+  call: 'llamada',
+  calls: 'llamadas',
+  'flight call': 'llamada en vuelo',
+  'nocturnal flight call': 'llamada nocturna en vuelo',
+  'alarm call': 'llamada de alarma',
+  'begging call': 'llamada de petición',
+  'chase call': 'llamada de persecución',
+  'territorial call': 'llamada territorial',
+  'aggressive call': 'llamada agresiva',
+  'fight call': 'llamada de pelea',
+  'contact call': 'llamada de contacto',
+  duet: 'dueto',
+  drumming: 'tamborileo',
+  imitation: 'imitación',
+  chips: 'chasquidos',
+  // Vocalizaciones de anfibios: xeno-canto también cataloga anuros.
+  'advertisement call': 'canto de anuncio',
+  'release call': 'canto de liberación',
+  'distress call': 'llamada de auxilio',
+  'courtship call': 'llamada de cortejo',
+  'encounter call': 'llamada de encuentro',
+};
+
+export const tipoSonido = (t?: string): string | undefined => {
+  if (!t) return undefined;
+  const partes = t
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => TIPO_SONIDO[p.toLowerCase()] ?? p);
+  return partes.length ? partes.join(', ') : undefined;
+};
+
 export const FACET_LABELS: Record<string, string> = {
   tipo: 'Tipo',
   clase: 'Clase',

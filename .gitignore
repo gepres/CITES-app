@@ -2,6 +2,9 @@ node_modules
 dist
 _scratch
 src/data/*.json
+# El índice de sonido sí se versiona: no se regenera en cada build.
+!src/data/audio-index.json
 *.local
 *.tsbuildinfo
 .DS_Store
+.env

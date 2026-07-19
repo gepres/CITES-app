@@ -1,5 +1,6 @@
 import {
   Activity,
+  AudioLines,
   FolderTree,
   GitBranch,
   Globe2,
@@ -16,7 +17,7 @@ import {
 import type { FacetKey } from '../types';
 import { APENDICE_INFO, FACET_LABELS } from '../lib/meta';
 import type { FacetOption } from '../lib/useSpeciesData';
-import { FACET_KEYS } from '../lib/useSpeciesData';
+import { FACET_KEYS, hayIndiceAudio } from '../lib/useSpeciesData';
 import FacetGroup from './FacetGroup';
 
 interface Props {
@@ -31,6 +32,9 @@ interface Props {
   onlyFav: boolean;
   setOnlyFav: (v: boolean) => void;
   favCount: number;
+  onlyAudio: boolean;
+  setOnlyAudio: (v: boolean) => void;
+  audioCount: number;
 }
 
 const DEFAULT_OPEN: FacetKey[] = ['clase'];
@@ -58,6 +62,9 @@ export default function FilterPanel({
   onlyFav,
   setOnlyFav,
   favCount,
+  onlyAudio,
+  setOnlyAudio,
+  audioCount,
 }: Props) {
   const apOptions = facets.apendice;
 
@@ -68,11 +75,12 @@ export default function FilterPanel({
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
             Filtros
           </h2>
-          {(activeCount > 0 || onlyFav) && (
+          {(activeCount > 0 || onlyFav || onlyAudio) && (
             <button
               onClick={() => {
                 clearAll();
                 setOnlyFav(false);
+                setOnlyAudio(false);
               }}
               className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline dark:text-brand-400"
             >
@@ -145,6 +153,26 @@ export default function FilterPanel({
             {favCount}
           </span>
         </button>
+
+        {/* Toggle: solo especies con grabación */}
+        {hayIndiceAudio && (
+          <button
+            type="button"
+            onClick={() => setOnlyAudio(!onlyAudio)}
+            aria-pressed={onlyAudio}
+            className={`mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition active:scale-[0.98] ${
+              onlyAudio
+                ? 'bg-sky-500 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            <AudioLines size={16} />
+            {onlyAudio ? 'Mostrando con sonido' : 'Solo con sonido'}
+            <span className="rounded-full bg-black/10 px-1.5 py-0.5 text-[10px] font-bold tabular-nums dark:bg-white/15">
+              {audioCount}
+            </span>
+          </button>
+        )}
 
         <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
           <span className="text-base font-extrabold text-brand-600 dark:text-brand-400">
